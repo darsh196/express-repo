@@ -58,6 +58,31 @@ app.get('/lessons', async (req, res) => {
     }
 });
 
+// Search Endpoint
+app.get('/search', async (req, res) => {
+    try {
+        const query = req.query.q; // Get search query from URL parameter
+        if (!query) {
+            return res.status(400).send('Query parameter "q" is required.');
+        }
+
+        // Perform case-insensitive search in the lessons collection
+        const lessons = await db.collection('lessons').find({
+            $or: [
+                { subject: { $regex: query, $options: 'i' } }, // Match subject
+                { location: { $regex: query, $options: 'i' } }, // Match location
+                { price: { $regex: query, $options: 'i' } },    // Match price (as string)
+                { availableInventory: { $regex: query, $options: 'i' } } // Match availability (as string)
+            ]
+        }).toArray();
+
+        res.json(lessons);
+    } catch (err) {
+        console.error('Error performing search:', err);
+        res.status(500).send('Error performing search.');
+    }
+});
+
 // POST: Save a new order
 app.post('/orders', async (req, res) => {
     try {
