@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const { MongoClient } = require('mongodb'); // Native MongoDB driver
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors'); 
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -26,6 +27,7 @@ connectToMongoDB();
 
 // Middleware
 app.use(bodyParser.json()); // For parsing JSON request bodies
+app.use(cors()); // Enable CORS for all routes
 
 // Logger middleware
 app.use((req, res, next) => {
