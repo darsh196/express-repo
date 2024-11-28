@@ -116,27 +116,6 @@ app.put('/lessons/:id', async (req, res) => {
     }
 });
 
-app.put('/lessons/:id/inventory', async (req, res) => {
-    const lessonId = parseInt(req.params.id); // Parse the ID as an integer
-    const { availableInventory } = req.body; // Get the updated value from the request body
-
-    try {
-        const result = await db.collection('lessons').updateOne(
-            { id: lessonId }, // Find the lesson by ID
-            { $set: { availableInventory } } // Update the availableInventory
-        );
-
-        if (result.matchedCount === 0) {
-            res.status(404).send('Lesson not found');
-        } else {
-            res.send('Inventory updated successfully');
-        }
-    } catch (err) {
-        console.error('Error updating inventory:', err);
-        res.status(500).send('Error updating inventory');
-    }
-});
-
 
 // Gracefully close MongoDB connection on exit
 process.on('SIGINT', async () => {
