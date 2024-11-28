@@ -26,7 +26,6 @@ connectToMongoDB();
 
 // Middleware
 app.use(bodyParser.json()); // For parsing JSON request bodies
-app.use(express.static('public')); // Serve static files from the "public" folder
 
 // Logger middleware
 app.use((req, res, next) => {
@@ -88,11 +87,6 @@ app.put('/lessons/:id', async (req, res) => {
         console.error('Error updating lesson:', err);
         res.status(500).send('Error updating lesson');
     }
-});
-
-// Fallback route to serve index.html for undefined routes
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Gracefully close MongoDB connection on exit
