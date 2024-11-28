@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // MongoDB connection
 const uri = 'mongodb+srv://darshgb:tLD4bfqJz4er1eDU@cluster0.yne46.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
