@@ -83,17 +83,56 @@ app.get('/search', async (req, res) => {
     }
 });
 
-// POST: Save a new order
+// POST: Save a new order and update inventory
 app.post('/orders', async (req, res) => {
+    const newOrder = req.body;
+
+    // Extract the lesson IDs from the order
+    const lessonIDs = newOrder.lessonIDs;
+
     try {
-        const newOrder = req.body;
-        const result = await db.collection('orders').insertOne(newOrder);
-        res.status(201).send({ message: 'Order saved', orderId: result.insertedId });
+        // Start a session for transactions
+        const session = client.startSession();
+        session.startTransaction();
+
+        // Loop through the lesson IDs and decrement their inventory
+        for (const lessonId of lessonIDs) {
+            const result = await db.collection('lessons').updateOne(
+                { id: lessonId }, // Match by the custom 'id' field
+                { $inc: { availableInventory: -1 } }, // Decrement the inventory by 1
+                { session }
+            );
+
+            if (result.matchedCount === 0) {
+                throw new Error(`Lesson with ID ${lessonId} not found`);
+            }
+
+            if (result.modifiedCount === 0) {
+                throw new Error(`Failed to update inventory for lesson ID ${lessonId}`);
+            }
+        }
+
+        // Save the order to the orders collection
+        const orderResult = await db.collection('orders').insertOne(newOrder, { session });
+
+        // Commit the transaction
+        await session.commitTransaction();
+        session.endSession();
+
+        res.status(201).send({ message: 'Order saved and inventory updated', orderId: orderResult.insertedId });
     } catch (err) {
-        console.error('Error saving order:', err);
-        res.status(500).send('Error saving order');
+        console.error('Error processing order:', err);
+
+        // If something goes wrong, abort the transaction
+        if (session) {
+            await session.abortTransaction();
+            session.endSession();
+        }
+
+        res.status(500).send('Error processing order');
     }
 });
+
 
 // PUT: Update a lesson
 app.put('/lessons/:id', async (req, res) => {
