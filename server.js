@@ -28,7 +28,6 @@ connectToMongoDB();
 // Middleware
 app.use(bodyParser.json()); // For parsing JSON request bodies
 app.use(cors()); // Enable CORS for all routes
-app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Logger middleware
 app.use((req, res, next) => {
